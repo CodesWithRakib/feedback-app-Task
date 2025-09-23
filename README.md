@@ -89,6 +89,7 @@ npm run init
 
 ## 📂 Project Structure
 
+```bash
 feedback-app/
 ├── app/
 │ ├── api/
@@ -105,6 +106,7 @@ feedback-app/
 ├── next.config.ts # Next.js configuration
 ├── package.json # Project dependencies
 └── README.md # Project documentation
+```
 
 ## 🗄 Database
 
