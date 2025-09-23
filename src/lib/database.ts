@@ -8,7 +8,7 @@ export async function getDb() {
   if (db) return db;
 
   db = await open({
-    filename: "./feedbacks.db",
+    filename: process.env.DATABASE_URL || "./feedbacks.db",
     driver: sqlite3.Database,
   });
 
