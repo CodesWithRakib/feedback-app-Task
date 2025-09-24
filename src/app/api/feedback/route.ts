@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Create new feedback
     const newFeedback = {
-      id: Math.random().toString(36).substring(2, 15),
+      id: Math.random().toString(36).substring(2, 15) || data.id.trim(),
       name: data.name.trim(),
       email: data.email.trim(),
       feedback: data.feedback.trim(),

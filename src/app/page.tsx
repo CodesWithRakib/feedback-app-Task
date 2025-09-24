@@ -197,7 +197,9 @@ export default function Home() {
       {/* Feedback List */}
       <section className="w-full max-w-2xl mt-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Community Feedback</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-white">
+            Community Feedback
+          </h2>
           <div className="flex items-center space-x-3">
             {isLoading && (
               <div className="flex items-center space-x-2 text-slate-400">
@@ -223,7 +225,7 @@ export default function Home() {
                 <span className="text-sm">Loading...</span>
               </div>
             )}
-            <span className="bg-white/10 text-slate-300 px-3 py-1 rounded-full text-sm backdrop-blur-sm">
+            <span className="bg-white/10 text-slate-300 px-3 py-1 rounded-full text-sm backdrop-blur-sm text-center">
               {feedbacks.length} {feedbacks.length === 1 ? "entry" : "entries"}
             </span>
           </div>
