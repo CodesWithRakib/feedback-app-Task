@@ -2,11 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
-    // Turbopack configuration options go here
-    // For example:
-    rules: {
-      // Custom rules if needed
-    },
+    // Turbopack configuration options
   },
   // Configure webpack for file system access
   webpack: (config) => {

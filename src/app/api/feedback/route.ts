@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/database";
-import { isValidEmail } from "@/lib/feedbackStore";
+import {
+  isValidEmail,
+  addFeedback,
+  getAllFeedbacks,
+} from "@/lib/feedbackStore";
 
-//Create new feedback
+// POST /api/feedback - Create new feedback
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const db = await getDb();
 
     // Validation
     if (!data.name?.trim() || !data.email?.trim() || !data.feedback?.trim()) {
@@ -31,23 +33,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Create new feedback
-    const id = Math.random().toString(36).substring(2, 15);
-    const now = new Date().toISOString();
-
-    await db.run(
-      `INSERT INTO feedbacks (id, name, email, feedback, createdAt, updatedAt) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [id, data.name.trim(), data.email.trim(), data.feedback.trim(), now, now]
-    );
-
     const newFeedback = {
-      id,
+      id: Math.random().toString(36).substring(2, 15),
       name: data.name.trim(),
       email: data.email.trim(),
       feedback: data.feedback.trim(),
-      createdAt: now,
-      updatedAt: now,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
+
+    // Add to database
+    await addFeedback(newFeedback);
 
     return NextResponse.json(
       {
@@ -71,13 +67,10 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Get all feedbacks
+// GET /api/feedback - Get all feedbacks
 export async function GET() {
   try {
-    const db = await getDb();
-    const feedbacks = await db.all(
-      "SELECT * FROM feedbacks ORDER BY createdAt DESC"
-    );
+    const feedbacks = await getAllFeedbacks();
 
     return NextResponse.json({
       success: true,

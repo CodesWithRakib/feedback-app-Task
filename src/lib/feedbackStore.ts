@@ -1,52 +1,63 @@
 // lib/feedbackStore.ts
 import { Feedback } from "@/types/feedback";
+import { getDb } from "@/lib/database";
 
 // Helper function to validate email format
 export const isValidEmail = (email: string) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
-// Create a mutable object to hold our feedbacks
-export const feedbackStore = {
-  feedbacks: [] as Feedback[],
 
-  // Debug method to log current state
-  logState: function (action: string) {
-    console.log(
-      `[${action}] Current feedbacks:`,
-      this.feedbacks.map((f) => ({ id: f.id, name: f.name }))
-    );
-  },
+// Add feedback to database
+export const addFeedback = async (feedback: Feedback) => {
+  const db = await getDb();
+  await db.run(
+    `INSERT INTO feedbacks (id, name, email, feedback, createdAt, updatedAt) 
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      feedback.id,
+      feedback.name,
+      feedback.email,
+      feedback.feedback,
+      feedback.createdAt,
+      feedback.updatedAt,
+    ]
+  );
+};
 
-  // Add feedback with logging
-  addFeedback: function (feedback: Feedback) {
-    console.log("Adding feedback:", feedback);
-    this.feedbacks.push(feedback);
-    this.logState("ADD");
-  },
+// Find feedback by ID
+export const findFeedbackById = async (
+  id: string
+): Promise<Feedback | undefined> => {
+  const db = await getDb();
+  return db.get("SELECT * FROM feedbacks WHERE id = ?", [id]);
+};
 
-  // Find feedback with logging
-  findFeedbackById: function (id: string) {
-    console.log(`Searching for feedback with ID: ${id}`);
-    this.logState("SEARCH");
-    const found = this.feedbacks.find((f) => f.id === id);
-    console.log(`Found feedback:`, found);
-    return found;
-  },
+// Update feedback
+export const updateFeedback = async (id: string, updatedFeedback: Feedback) => {
+  const db = await getDb();
+  await db.run(
+    `UPDATE feedbacks 
+     SET name = ?, email = ?, feedback = ?, updatedAt = ? 
+     WHERE id = ?`,
+    [
+      updatedFeedback.name,
+      updatedFeedback.email,
+      updatedFeedback.feedback,
+      updatedFeedback.updatedAt,
+      id,
+    ]
+  );
+};
 
-  // Update feedback with logging
-  updateFeedback: function (id: string, updatedFeedback: Feedback) {
-    console.log(`Updating feedback with ID: ${id}`);
-    this.feedbacks = this.feedbacks.map((f) =>
-      f.id === id ? updatedFeedback : f
-    );
-    this.logState("UPDATE");
-  },
+// Delete feedback
+export const deleteFeedback = async (id: string) => {
+  const db = await getDb();
+  await db.run("DELETE FROM feedbacks WHERE id = ?", [id]);
+};
 
-  // Delete feedback with logging
-  deleteFeedback: function (id: string) {
-    console.log(`Deleting feedback with ID: ${id}`);
-    this.feedbacks = this.feedbacks.filter((f) => f.id !== id);
-    this.logState("DELETE");
-  },
+// Get all feedbacks
+export const getAllFeedbacks = async (): Promise<Feedback[]> => {
+  const db = await getDb();
+  return db.all("SELECT * FROM feedbacks ORDER BY createdAt DESC");
 };

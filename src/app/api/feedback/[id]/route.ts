@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/database";
-import { isValidEmail } from "@/lib/feedbackStore";
+import {
+  isValidEmail,
+  findFeedbackById,
+  updateFeedback,
+  deleteFeedback,
+} from "@/lib/feedbackStore";
 
-//Get single feedback by ID
+// GET /api/feedback/[id] - Get single feedback by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const db = await getDb();
 
     if (!id) {
       return NextResponse.json(
@@ -18,7 +21,7 @@ export async function GET(
       );
     }
 
-    const feedback = await db.get("SELECT * FROM feedbacks WHERE id = ?", [id]);
+    const feedback = await findFeedbackById(id);
 
     if (!feedback) {
       return NextResponse.json(
@@ -45,7 +48,7 @@ export async function GET(
   }
 }
 
-// Update feedback by ID
+// PUT /api/feedback/[id] - Update feedback by ID
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -53,7 +56,6 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const db = await getDb();
 
     if (!id) {
       return NextResponse.json(
@@ -84,11 +86,8 @@ export async function PUT(
       );
     }
 
-    // Check if feedback exists
-    const existingFeedback = await db.get(
-      "SELECT * FROM feedbacks WHERE id = ?",
-      [id]
-    );
+    // Find existing feedback
+    const existingFeedback = await findFeedbackById(id);
     if (!existingFeedback) {
       return NextResponse.json(
         { success: false, error: "Feedback not found" },
@@ -97,21 +96,15 @@ export async function PUT(
     }
 
     // Update feedback
-    const now = new Date().toISOString();
-    await db.run(
-      `UPDATE feedbacks 
-       SET name = ?, email = ?, feedback = ?, updatedAt = ? 
-       WHERE id = ?`,
-      [data.name.trim(), data.email.trim(), data.feedback.trim(), now, id]
-    );
-
     const updatedFeedback = {
       ...existingFeedback,
       name: data.name.trim(),
       email: data.email.trim(),
       feedback: data.feedback.trim(),
-      updatedAt: now,
+      updatedAt: new Date().toISOString(),
     };
+
+    await updateFeedback(id, updatedFeedback);
 
     return NextResponse.json({
       success: true,
@@ -132,14 +125,13 @@ export async function PUT(
   }
 }
 
-// Delete feedback by ID
+// DELETE /api/feedback/[id] - Delete feedback by ID
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const db = await getDb();
 
     if (!id) {
       return NextResponse.json(
@@ -149,10 +141,7 @@ export async function DELETE(
     }
 
     // Check if feedback exists
-    const existingFeedback = await db.get(
-      "SELECT * FROM feedbacks WHERE id = ?",
-      [id]
-    );
+    const existingFeedback = await findFeedbackById(id);
     if (!existingFeedback) {
       return NextResponse.json(
         { success: false, error: "Feedback not found" },
@@ -161,7 +150,7 @@ export async function DELETE(
     }
 
     // Delete feedback
-    await db.run("DELETE FROM feedbacks WHERE id = ?", [id]);
+    await deleteFeedback(id);
 
     return NextResponse.json({
       success: true,

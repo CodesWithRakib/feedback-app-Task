@@ -1,5 +1,7 @@
+// lib/database.ts
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
+import path from "path";
 
 // Initialize SQLite database
 let db: Database | null = null;
@@ -7,8 +9,13 @@ let db: Database | null = null;
 export async function getDb() {
   if (db) return db;
 
+  const dbPath =
+    process.env.NODE_ENV === "production"
+      ? "/tmp/feedbacks.db"
+      : path.join(process.cwd(), "feedbacks.db");
+
   db = await open({
-    filename: process.env.DATABASE_URL || "./feedbacks.db",
+    filename: dbPath,
     driver: sqlite3.Database,
   });
 
